@@ -1,0 +1,11 @@
+/app/src/test/java/com/humberto/api/ocorrencias/OcorrenciasApiApplicationTests.java
+/app/src/test/java/com/humberto/api/ocorrencias/controller/AuthControllerTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/controller/ClienteControllerTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/controller/EnderecoControllerTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/controller/OcorrenciaControllerTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/service/AuthServiceTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/service/ClienteServiceTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/service/EnderecoServiceTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/service/FotoOcorrenciaServiceTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/service/LocalStorageServiceTest.java
+/app/src/test/java/com/humberto/api/ocorrencias/service/OcorrenciaServiceTest.java

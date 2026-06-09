@@ -1,0 +1,54 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ocorrencias-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ocorrencias-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  app:
+    build: .
+    container_name: ocorrencias-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      SERVER_PORT: ${SERVER_PORT}
+      APP_BASE_URL: ${APP_BASE_URL}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
+    restart: on-failure
+
+volumes:
+  postgres_data:
+  uploads_data:
