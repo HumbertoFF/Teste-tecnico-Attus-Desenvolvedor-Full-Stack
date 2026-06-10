@@ -33,6 +33,8 @@ app:
   base-url: ${APP_BASE_URL}
   error:
     include-message: always
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:80,http://localhost}
 
 security:
   jwt:

@@ -402,30 +402,49 @@ Com `%X{requestId}` no padrão de log, todos os logs de uma mesma requisição f
 
 ---
 
+
 ## Como Executar
 
-### 1. Subir o back-end
+### ✅ Opção 1 — Tudo com Docker (recomendado)
+
+Sobe PostgreSQL + API + Frontend com um único comando, a partir da **raiz do repositório**:
 
 ```bash
-cd ocorrencias-api
-docker compose --env-file .env.development up -d
-(em um cenário de produção é utilizado o .env)
+docker compose --env-file .env.development up -d --build
 ```
 
-Aguarde os containers ficarem healthy (~30s). Os serviços sobem em:
+Aguarde ~60–90s na primeira execução (Maven e npm baixam dependências). Nas execuções seguintes o cache do Docker reduz para ~15s.
+
+> **Atenção:** use o `docker-compose.yml` da **raiz**, não o de dentro de `ocorrencias-api/`.
+
+A ordem de inicialização é garantida por healthchecks:
+
+```
+postgres (healthy) → api (healthy) → frontend
+postgres (healthy) → pgadmin
+```
+
+Serviços disponíveis após subir:
 
 | Serviço | URL | Credenciais |
 |---|---|---|
-| API REST | http://localhost:8080 | — |
-| Swagger UI | http://localhost:8080/swagger-ui.html | — |
-| pgAdmin | http://localhost:5050 | `admin@admin.com` / `admin` |
-| PostgreSQL | localhost:5432 | `postgres` / `postgres` |
+| **Frontend Angular** | http://localhost:4200 | admin@admin.com.br / admin123 |
+| **API REST** | http://localhost:8080 | — |
+| **Swagger UI** | http://localhost:8080/swagger-ui.html | — |
+| **pgAdmin** | http://localhost:5050 | admin@admin.com / admin |
+| **PostgreSQL** | localhost:5432 | postgres / postgres |
 
-> **Variáveis de ambiente** estão em `.env.development`. Para produção, criar `.env` com os mesmos campos e valores seguros.
+---
 
-### 2. Subir o front-end
+### 🔧 Opção 2 — Desenvolvimento local (hot-reload no frontend)
+
+Sobe apenas banco e API no Docker, e o frontend com `ng serve` para ter hot-reload:
 
 ```bash
+# Terminal 1 — banco + API
+docker compose --env-file .env.development up postgres api -d --build
+
+# Terminal 2 — frontend com hot-reload
 cd ocorrencias-frontend
 npm install
 npm start
@@ -433,24 +452,77 @@ npm start
 
 Acesse **http://localhost:4200**
 
-O `proxy.conf.json` redireciona `/api/*` para `localhost:8080`, eliminando problemas de CORS em desenvolvimento.
+O `proxy.conf.json` redireciona `/api/*` para `localhost:8080`, eliminando CORS em desenvolvimento.
 
-### 3. Credenciais padrão
+---
+
+### 🐳 Opção 3 — Só a API (sem frontend)
+
+Dentro da pasta `ocorrencias-api/`:
+
+```bash
+cd ocorrencias-api
+docker compose --env-file .env.development up -d --build
+```
+
+---
+
+### Parar os containers
+
+```bash
+# Na raiz — para o compose completo
+docker compose down          # mantém dados nos volumes
+docker compose down -v       # remove volumes (apaga banco e uploads)
+
+# Rebuild forçado (sem cache — use após mudanças em arquivos Java ou SCSS)
+docker compose --env-file .env.development up -d --build --no-cache
+```
+
+---
+
+### Variáveis de Ambiente
+
+O arquivo `.env.development` na raiz contém todas as variáveis necessárias:
+
+```env
+# PostgreSQL
+POSTGRES_DB=ocorrencias_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# pgAdmin
+PGADMIN_DEFAULT_EMAIL=admin@admin.com
+PGADMIN_DEFAULT_PASSWORD=admin
+
+# API
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=ocorrencias_db
+DB_USER=postgres
+DB_PASS=postgres
+JWT_SECRET=3f8a7b2c9d4e1f6a0b5c8d3e7f2a9b4c1d6e0f3a8b7c2d5e9f4a1b6c0d3e7f
+SERVER_PORT=8080
+APP_BASE_URL=http://localhost:8080
+
+# CORS — origens permitidas (separar por vírgula)
+CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:80,http://localhost
+```
+
+> Para produção, crie um `.env` com os mesmos campos e valores seguros — especialmente `JWT_SECRET`, senhas do banco e `CORS_ALLOWED_ORIGINS` com o domínio real.
+
+---
+
+## Credenciais Padrão
 
 ```
 Email: admin@admin.com.br
 Senha: admin123
 ```
 
-O usuário administrador é criado automaticamente pela migration `V2__create_usuario.sql` com senha já hasheada em BCrypt.
+O usuário administrador é criado automaticamente pela migration `V2__create_usuario.sql` com senha hasheada em BCrypt.
 
-### 4. Parar os containers
+---
 
-```bash
-cd ocorrencias-api
-docker compose down        # mantém dados nos volumes
-docker compose down -v     # remove volumes (apaga dados)
-```
 
 ## Diagrama do Banco de Dados
 
