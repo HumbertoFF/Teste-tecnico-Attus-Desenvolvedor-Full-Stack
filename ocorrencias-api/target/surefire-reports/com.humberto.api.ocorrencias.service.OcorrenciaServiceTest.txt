@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.humberto.api.ocorrencias.service.OcorrenciaServiceTest
--------------------------------------------------------------------------------
-Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.382 s -- in com.humberto.api.ocorrencias.service.OcorrenciaServiceTest

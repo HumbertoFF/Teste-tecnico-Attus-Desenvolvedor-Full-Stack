@@ -1,5 +1,15 @@
+target/
 HELP.md
-  target/
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.env
+.env.production
+.DS_Store
+Thumbs.db
+
 .mvn
 !**/src/main/**/target/
 !**/src/test/**/target/

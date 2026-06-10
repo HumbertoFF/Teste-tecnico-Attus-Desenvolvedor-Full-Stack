@@ -1,10 +1,20 @@
-HELP.md
-  target/
-.mvn
-!**/src/main/**/target/
-!**/src/test/**/target/
+# ── Maven (backend) ──────────────────────────────
+ocorrencias-api/target/
+!ocorrencias-api/**/src/main/**/target/
+!ocorrencias-api/**/src/test/**/target/
+ocorrencias-api/HELP.md
 
-### STS ###
+# ── Node / Angular (frontend) ────────────────────
+ocorrencias-frontend/node_modules/
+ocorrencias-frontend/dist/
+ocorrencias-frontend/.angular/
+
+# ── IDEs ─────────────────────────────────────────
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
 .apt_generated
 .classpath
 .factorypath
@@ -13,24 +23,21 @@ HELP.md
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+# ── Ambiente — nunca versionar credenciais ───────
+.env
+.env.production
+.env.local
+*.env
+# .env.development é commitado intencionalmente
 
-### NetBeans ###
+# ── OS ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+
+# ── NetBeans ─────────────────────────────────────
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Environment ###
-.env
