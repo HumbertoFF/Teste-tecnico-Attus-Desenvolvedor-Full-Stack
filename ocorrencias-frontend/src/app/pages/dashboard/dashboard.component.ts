@@ -4,13 +4,19 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DatePipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
 import { OcorrenciasService } from '../../core/services/ocorrencias.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { OcorrenciaResponse } from '../../core/models';
 import { StatusBadgeComponent } from '../../shared/status-badge/status-badge.component';
+import { forkJoin } from 'rxjs';
 
-interface Stat { label: string; icon: string; color: string; bg: string; value: number; }
+interface StatCard {
+  label: string;
+  icon: string;
+  gradFrom: string;
+  gradTo: string;
+  value: number;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -23,65 +29,69 @@ interface Stat { label: string; icon: string; color: string; bg: string; value: 
     </div>
 
     <!-- Stats -->
-    <div class="stats-row">
+    <div class="stats-grid">
       @for (s of stats; track s.label) {
         <div class="stat-card">
-          <div class="stat-icon" [style.background]="s.bg">
-            <mat-icon [style.color]="s.color">{{ s.icon }}</mat-icon>
+          <div class="stat-icon" [style]="'background: linear-gradient(135deg,' + s.gradFrom + ',' + s.gradTo + ')'">
+            <mat-icon>{{ s.icon }}</mat-icon>
           </div>
           <div class="stat-body">
-            <div class="stat-num">{{ loading ? '—' : s.value }}</div>
+            @if (loading) {
+              <div class="stat-skeleton"></div>
+            } @else {
+              <div class="stat-value">{{ s.value }}</div>
+            }
             <div class="stat-label">{{ s.label }}</div>
           </div>
         </div>
       }
     </div>
 
-    <!-- Recentes -->
+    <!-- Recent list -->
     <div class="section-card">
-      <div class="list-header">
-        <span class="section-title" style="margin:0">Últimas Ocorrências</span>
+      <div class="section-header">
+        <span class="section-title">Últimas Ocorrências</span>
         <div style="display:flex;gap:8px">
-          <a mat-stroked-button routerLink="/ocorrencias/nova" class="hdr-btn">
+          <a mat-stroked-button routerLink="/ocorrencias/nova" class="btn-sm-action">
             <mat-icon>add</mat-icon> Nova
           </a>
-          <a mat-stroked-button routerLink="/ocorrencias" class="hdr-btn">
+          <a mat-stroked-button routerLink="/ocorrencias" class="btn-sm-action">
             Ver todas <mat-icon>arrow_forward</mat-icon>
           </a>
         </div>
       </div>
 
       @if (loading) {
-        <div class="skeletons">
-          @for (i of [1,2,3,4]; track i) {
-            <div class="sk-row">
+        <div class="loading-rows">
+          @for (i of [1,2,3,4,5]; track i) {
+            <div class="skeleton-row">
               <div class="sk sk-id"></div>
               <div class="sk sk-name"></div>
-              <div class="sk sk-city"></div>
+              <div class="sk sk-loc"></div>
               <div class="sk sk-badge"></div>
             </div>
           }
         </div>
-      } @else if (!recent.length) {
+      } @else if (recent.length === 0) {
         <div class="empty-state">
           <div class="empty-icon">📋</div>
-          <p>Nenhuma ocorrência cadastrada.</p>
-          <a mat-flat-button color="primary" routerLink="/ocorrencias/nova" style="margin-top:14px">
-            Cadastrar a primeira
+          <p>Nenhuma ocorrência cadastrada ainda.</p>
+          <a mat-flat-button color="primary" routerLink="/ocorrencias/nova" style="margin-top:16px">
+            Cadastrar primeira ocorrência
           </a>
         </div>
       } @else {
-        <div class="occ-list">
+        <div class="recent-list">
           @for (o of recent; track o.codOcorrencia) {
-            <a [routerLink]="['/ocorrencias', o.codOcorrencia]" class="occ-row">
-              <span class="occ-id">#{{ o.codOcorrencia }}</span>
-              <div class="occ-info">
-                <span class="occ-name">{{ o.cliente?.nmeCliente }}</span>
-                <span class="occ-loc">{{ o.endereco?.nmeCidade }}, {{ o.endereco?.nmeEstado }}</span>
+            <a [routerLink]="['/ocorrencias', o.codOcorrencia]" class="recent-row">
+              <span class="recent-num">#{{ o.codOcorrencia }}</span>
+              <div class="recent-info">
+                <span class="recent-name">{{ o.cliente?.nmeCliente }}</span>
+                <span class="recent-sub">{{ o.endereco?.nmeCidade }}, {{ o.endereco?.nmeEstado }}</span>
               </div>
-              <span class="occ-date">{{ o.dtaOcorrencia | date:'dd/MM/yyyy' }}</span>
+              <span class="recent-date">{{ o.dtaOcorrencia | date:'dd/MM/yyyy' }}</span>
               <app-status-badge [status]="o.staOcorrencia" />
-              <mat-icon class="occ-arrow">chevron_right</mat-icon>
+              <mat-icon class="row-chevron">chevron_right</mat-icon>
             </a>
           }
         </div>
@@ -89,73 +99,89 @@ interface Stat { label: string; icon: string; color: string; bg: string; value: 
     </div>
   `,
   styles: [`
-    .stats-row {
+    /* Stats */
+    .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       gap: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .stat-card {
-      background: #fff;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 18px 20px;
-      display: flex; align-items: center; gap: 16px;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow .15s, transform .15s;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color .2s, transform .2s;
     }
-    .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+    .stat-card:hover { border-color: rgba(79,124,255,.4); transform: translateY(-1px); }
     .stat-icon {
-      width: 44px; height: 44px; border-radius: 11px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
-    .stat-icon mat-icon { font-size: 22px !important; width: 22px !important; height: 22px !important; }
-    .stat-num   { font-size: 1.8rem; font-weight: 700; color: var(--text); line-height: 1; }
-    .stat-label { font-size: .78rem; color: var(--muted); margin-top: 5px; }
+    .stat-icon mat-icon { color: #fff; font-size: 22px !important; width: 22px !important; height: 22px !important; }
+    .stat-body   { flex: 1; min-width: 0; }
+    .stat-value  { font-size: 1.9rem; font-weight: 700; line-height: 1; color: var(--text); }
+    .stat-label  { color: var(--muted); font-size: .8rem; margin-top: 5px; }
+    .stat-skeleton { width: 48px; height: 28px; background: var(--surface2); border-radius: 4px; margin-bottom: 2px; }
 
-    .list-header {
+    /* Section */
+    .section-header {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
-    .hdr-btn {
-      font-size: .78rem !important; height: 30px !important;
+    .btn-sm-action {
+      font-size: .78rem !important;
+      height: 30px !important;
       padding: 0 10px !important;
-      display: inline-flex !important; align-items: center !important; gap: 4px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
     }
-    .hdr-btn mat-icon { font-size: 15px !important; width: 15px !important; height: 15px !important; }
+    .btn-sm-action mat-icon { font-size: 16px !important; width: 16px !important; height: 16px !important; }
 
-    /* Skeleton */
-    .skeletons { display: flex; flex-direction: column; gap: 6px; }
-    .sk-row {
-      display: flex; align-items: center; gap: 14px;
-      padding: 12px 8px; border-radius: 8px;
+    /* Loading skeleton rows */
+    .loading-rows { display: flex; flex-direction: column; gap: 8px; }
+    .skeleton-row {
+      display: flex; align-items: center; gap: 16px;
+      padding: 12px 8px;
+      border-radius: 8px;
       border-bottom: 1px solid var(--border);
     }
-    .sk { background: var(--surface2); border-radius: 4px; height: 13px; animation: pulse 1.4s ease infinite; }
-    .sk-id    { width: 26px; flex-shrink: 0; }
-    .sk-name  { flex: 1; }
-    .sk-city  { width: 90px; }
-    .sk-badge { width: 60px; height: 20px; border-radius: 20px; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+    .sk { background: var(--surface2); border-radius: 4px; height: 14px; }
+    .sk-id    { width: 28px; }
+    .sk-name  { width: 140px; flex: 1; }
+    .sk-loc   { width: 100px; }
+    .sk-badge { width: 70px; height: 22px; border-radius: 20px; }
 
-    /* List */
-    .occ-list { display: flex; flex-direction: column; }
-    .occ-row {
-      display: flex; align-items: center; gap: 14px;
-      padding: 11px 8px; border-radius: 8px;
-      text-decoration: none; color: inherit;
-      border-bottom: 1px solid var(--border);
-      transition: background .12s;
+    /* Recent rows */
+    .recent-list { display: flex; flex-direction: column; }
+    .recent-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 8px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      border-bottom: 1px solid transparent;
+      transition: background .15s;
     }
-    .occ-row:last-child { border-bottom: none; }
-    .occ-row:hover { background: var(--surface2); }
-    .occ-id    { font-size: .74rem; font-weight: 700; color: var(--accent); min-width: 28px; flex-shrink: 0; }
-    .occ-info  { flex: 1; min-width: 0; }
-    .occ-name  { display: block; font-size: .875rem; font-weight: 500; color: var(--text);
-                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .occ-loc   { display: block; font-size: .74rem; color: var(--muted); margin-top: 1px; }
-    .occ-date  { font-size: .78rem; color: var(--muted); white-space: nowrap; }
-    .occ-arrow { font-size: 17px !important; width: 17px !important; height: 17px !important; color: var(--muted) !important; }
+    .recent-row:hover { background: var(--surface2); }
+    .recent-row:last-child { border-bottom: none; }
+
+    .recent-num  { font-size: .75rem; font-weight: 700; color: var(--accent); min-width: 30px; }
+    .recent-info { flex: 1; min-width: 0; }
+    .recent-name { display: block; font-weight: 500; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .recent-sub  { display: block; font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .recent-date { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+    .row-chevron {
+      color: var(--muted) !important; font-size: 18px !important;
+      width: 18px !important; height: 18px !important;
+    }
   `]
 })
 export class DashboardComponent implements OnInit {
@@ -164,11 +190,12 @@ export class DashboardComponent implements OnInit {
 
   loading = true;
   recent: OcorrenciaResponse[] = [];
-  stats: Stat[] = [
-    { label: 'Total de Ocorrências', icon: 'assignment',        color: '#6366f1', bg: '#eef2ff', value: 0 },
-    { label: 'Ocorrências Ativas',   icon: 'pending_actions',   color: '#10b981', bg: '#ecfdf5', value: 0 },
-    { label: 'Finalizadas',          icon: 'check_circle',      color: '#f59e0b', bg: '#fffbeb', value: 0 },
-    { label: 'Clientes',             icon: 'people_outline',    color: '#8b5cf6', bg: '#f5f3ff', value: 0 },
+
+  stats: StatCard[] = [
+    { label: 'Total de Ocorrências', icon: 'assignment',   gradFrom: '#1e3a6e', gradTo: '#2a4a8e', value: 0 },
+    { label: 'Ocorrências Ativas',   icon: 'pending_actions', gradFrom: '#1a3d2a', gradTo: '#235233', value: 0 },
+    { label: 'Finalizadas',          icon: 'check_circle', gradFrom: '#3a3020', gradTo: '#4a3d28', value: 0 },
+    { label: 'Clientes Cadastrados', icon: 'people',       gradFrom: '#2e1e4a', gradTo: '#3c2860', value: 0 },
   ];
 
   ngOnInit() {
