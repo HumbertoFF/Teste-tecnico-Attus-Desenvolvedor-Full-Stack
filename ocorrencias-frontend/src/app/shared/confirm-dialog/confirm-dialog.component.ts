@@ -16,37 +16,25 @@ export interface ConfirmDialogData {
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   template: `
     <div mat-dialog-title class="dlg-title">
-      <div class="dlg-icon" [class.danger]="data.isDanger">
-        <mat-icon>{{ data.isDanger ? 'warning_amber' : 'help_outline' }}</mat-icon>
-      </div>
+      <mat-icon [class.danger-icon]="data.isDanger">{{ data.isDanger ? 'warning' : 'help_outline' }}</mat-icon>
       {{ data.title }}
     </div>
     <mat-dialog-content>
       <p class="dlg-msg">{{ data.message }}</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-stroked-button (click)="ref.close(false)">Cancelar</button>
+      <button mat-button (click)="ref.close(false)">Cancelar</button>
       <button mat-flat-button [color]="data.isDanger ? 'warn' : 'primary'" (click)="ref.close(true)">
         {{ data.confirmLabel ?? 'Confirmar' }}
       </button>
     </mat-dialog-actions>
   `,
   styles: [`
-    .dlg-title {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 1rem !important; font-weight: 600;
-    }
-    .dlg-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: #eef2ff; display: flex; align-items: center; justify-content: center;
-    }
-    .dlg-icon mat-icon { color: var(--accent); font-size: 18px !important; width: 18px !important; height: 18px !important; }
-    .dlg-icon.danger { background: #fef2f2; }
-    .dlg-icon.danger mat-icon { color: var(--danger); }
-    .dlg-msg { color: var(--muted); margin: 0; line-height: 1.6; font-size: .9rem; }
+    .dlg-title { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 600; }
+    .danger-icon { color: var(--danger) !important; }
+    .dlg-msg { color: var(--muted); margin: 0; line-height: 1.6; }
   `]
 })
 export class ConfirmDialogComponent {
-  constructor(public ref: MatDialogRef<ConfirmDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData) {}
+  constructor(public ref: MatDialogRef<ConfirmDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData) {}
 }

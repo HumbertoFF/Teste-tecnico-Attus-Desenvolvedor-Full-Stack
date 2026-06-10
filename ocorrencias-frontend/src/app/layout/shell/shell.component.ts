@@ -19,10 +19,12 @@ import { TopbarComponent } from '../topbar/topbar.component';
     </div>
   `,
   styles: [`
-    .shell { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
+    .shell { display: flex; height: 100vh; overflow: hidden; }
     .shell-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .shell-content { flex: 1; overflow-y: auto; padding: 32px 36px; }
-    @media (max-width: 768px) { .shell-content { padding: 20px 16px; } }
+    @media (max-width: 768px) {
+      .shell-content { padding: 20px 16px; }
+    }
   `]
 })
 export class ShellComponent {}
